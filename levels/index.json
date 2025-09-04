@@ -1,0 +1,19 @@
+{
+  "levels": [
+    {
+      "file": "level-1.json",
+      "name": "First Spark",
+      "description": "Learn basic bomb placement and blast blocking"
+    },
+    {
+      "file": "level-2.json", 
+      "name": "Decoy",
+      "description": "Use noise to lure guards away from targets"
+    },
+    {
+      "file": "level-3.json",
+      "name": "Countdown", 
+      "description": "Master timer bombs and noise priority"
+    }
+  ]
+}

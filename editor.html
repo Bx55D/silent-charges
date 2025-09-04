@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silent Charges - Level Editor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #ffff00;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            color: #88ccff;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 8px 16px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #333;
+        }
+
+        .nav-links a:hover {
+            background-color: #555;
+        }
+
+        #editorContainer {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 1200px;
+        }
+
+        #editorCanvas {
+            border: 2px solid #333;
+            background-color: #000;
+            cursor: crosshair;
+        }
+
+        #editorControls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 300px;
+        }
+
+        .control-section {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .control-section h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #ffff00;
+            font-size: 16px;
+        }
+
+        .tool-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .tool-button {
+            padding: 10px 12px;
+            font-size: 14px;
+            background-color: #555;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .tool-button:hover {
+            background-color: #777;
+        }
+
+        .tool-button.active {
+            background-color: #007700;
+        }
+
+        button {
+            padding: 10px 14px;
+            font-size: 14px;
+            background-color: #666;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #888;
+        }
+
+        button:active {
+            background-color: #444;
+        }
+
+        .action-button {
+            background-color: #006600;
+            margin-bottom: 5px;
+        }
+
+        .action-button:hover {
+            background-color: #008800;
+        }
+
+        .danger-button {
+            background-color: #cc0000;
+        }
+
+        .danger-button:hover {
+            background-color: #ff0000;
+        }
+
+        input, select, textarea {
+            padding: 8px;
+            background-color: #444;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .config-row label {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .config-row input, .config-row select {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        #jsonOutput {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        #statusMessage {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status-success {
+            background-color: #004400;
+            color: #00ff00;
+        }
+
+        .status-error {
+            background-color: #440000;
+            color: #ff0000;
+        }
+
+        .entity-list {
+            max-height: 100px;
+            overflow-y: auto;
+            background-color: #444;
+            border: 1px solid #666;
+            border-radius: 4px;
+            padding: 5px;
+            margin-bottom: 8px;
+        }
+
+        .entity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            margin: 2px 0;
+            background-color: #555;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+
+        .entity-item button {
+            padding: 2px 6px;
+            font-size: 10px;
+            background-color: #cc0000;
+            min-width: auto;
+        }
+
+        .grid-info {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Silent Charges - Level Editor</h1>
+    
+    <div class="nav-links">
+        <a href="index.html">← Back to Game</a>
+    </div>
+
+    <div id="editorContainer">
+        <canvas id="editorCanvas" width="640" height="640"></canvas>
+        
+        <div id="editorControls">
+            <!-- Tools -->
+            <div class="control-section">
+                <h3>Tools</h3>
+                <div class="tool-buttons">
+                    <button class="tool-button active" data-tool="floor">Floor</button>
+                    <button class="tool-button" data-tool="wall">Wall</button>
+                    <button class="tool-button" data-tool="void">Void</button>
+                    <button class="tool-button" data-tool="guard">Guard</button>
+                    <button class="tool-button" data-tool="target">Target</button>
+                    <button class="tool-button" data-tool="erase">Erase</button>
+                </div>
+            </div>
+
+            <!-- Level Config -->
+            <div class="control-section">
+                <h3>Level Configuration</h3>
+                
+                <div class="config-row">
+                    <label>Level ID:</label>
+                    <input type="text" id="levelId" value="custom-level">
+                </div>
+                
+                <div class="config-row">
+                    <label>Level Name:</label>
+                    <input type="text" id="levelName" value="Custom Level">
+                </div>
+                
+                <div class="config-row">
+                    <label>Grid Size:</label>
+                    <select id="gridSize">
+                        <option value="16">16×16</option>
+                        <option value="20">20×20</option>
+                        <option value="24" selected>24×24</option>
+                        <option value="32">32×32</option>
+                        <option value="40">40×40</option>
+                        <option value="48">48×48</option>
+                        <option value="64">64×64</option>
+                    </select>
+                </div>
+                
+                <div class="config-row">
+                    <label>Timers Allowed:</label>
+                    <input type="checkbox" id="timersAllowed">
+                </div>
+                
+                <div class="config-row">
+                    <label>Blast Range:</label>
+                    <input type="number" id="blastRange" value="3" min="1" max="10">
+                </div>
+                
+                <div class="config-row">
+                    <label>Max Active Bombs:</label>
+                    <input type="number" id="maxActiveBombs" value="4" min="1" max="20">
+                </div>
+
+                <div class="config-row">
+                    <label>Max Bombs Per Turn:</label>
+                    <input type="number" id="maxBombsPerTurn" value="1" min="1" max="10">
+                </div>
+                
+                <div class="config-row">
+                    <label>Default Hearing Radius:</label>
+                    <input type="number" id="defaultHearingRadius" value="8" min="1" max="20">
+                </div>
+
+                <div class="grid-info">
+                    Current grid: <span id="currentGridSize">24×24</span>
+                </div>
+            </div>
+
+            <!-- Entities -->
+            <div class="control-section">
+                <h3>Guards</h3>
+                <div class="entity-list" id="guardsList">
+                    <div style="text-align: center; color: #888; font-size: 12px;">No guards placed</div>
+                </div>
+                
+                <h3>Targets</h3>
+                <div class="entity-list" id="targetsList">
+                    <div style="text-align: center; color: #888; font-size: 12px;">No targets placed</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <button class="action-button" onclick="testLevel()">Test Level</button>
+                <button class="action-button" onclick="exportLevel()">Export JSON</button>
+                <button onclick="importLevel()">Import JSON</button>
+                <button class="danger-button" onclick="clearLevel()">Clear All</button>
+            </div>
+
+            <!-- JSON Export -->
+            <div class="control-section">
+                <h3>JSON Output</h3>
+                <textarea id="jsonOutput" placeholder="Exported JSON will appear here..."></textarea>
+                <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            </div>
+
+            <div id="statusMessage"></div>
+        </div>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>
